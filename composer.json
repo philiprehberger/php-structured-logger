@@ -1,0 +1,43 @@
+{
+    "name": "philiprehberger/php-structured-logger",
+    "description": "PSR-3 compatible logger that outputs structured JSON log lines",
+    "version": "1.0.0",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "log",
+        "logger",
+        "structured",
+        "json",
+        "psr-3"
+    ],
+    "authors": [
+        {
+            "name": "Philip Rehberger"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "psr/log": "^3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0",
+        "laravel/pint": "^1.0",
+        "phpstan/phpstan": "^1.12|^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "PhilipRehberger\\StructuredLogger\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PhilipRehberger\\StructuredLogger\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
