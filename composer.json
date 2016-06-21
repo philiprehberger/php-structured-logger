@@ -11,6 +11,7 @@
         "json",
         "psr-3"
     ],
+    "homepage": "https://github.com/philiprehberger/php-structured-logger",
     "authors": [
         {
             "name": "Philip Rehberger"
@@ -37,6 +38,11 @@
     },
     "config": {
         "sort-packages": true
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "lint": "vendor/bin/pint",
+        "analyse": "vendor/bin/phpstan analyse"
     },
     "minimum-stability": "stable",
     "prefer-stable": true
