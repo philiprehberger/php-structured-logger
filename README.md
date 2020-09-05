@@ -8,7 +8,7 @@ PSR-3 compatible logger that outputs structured JSON log lines.
 
 ## Requirements
 
-- PHP ^8.2
+- PHP 8.2+
 - psr/log ^3.0
 
 ## Installation
@@ -88,7 +88,7 @@ $logger->info('Payment processed');
 // {"timestamp":"...","level":"info","message":"Payment processed","channel":"payments"}
 ```
 
-## Output format
+### Output Format
 
 Each log line is a single JSON object with the following fields:
 
