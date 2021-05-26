@@ -74,6 +74,39 @@ $logger = new JsonLogger(
 );
 ```
 
+### Persistent context
+
+Use `withContext()` to create a new logger instance with fields that are automatically included in every log entry:
+
+```php
+$logger = new JsonLogger(output: '/var/log/app.log');
+
+$requestLogger = $logger->withContext([
+    'request_id' => 'req-abc-123',
+    'service' => 'api',
+]);
+
+$requestLogger->info('Request received');
+$requestLogger->info('Processing complete', ['duration_ms' => 42]);
+// Both entries include request_id and service in context
+```
+
+### Minimum log level
+
+Use `setMinLevel()` to filter out log entries below a severity threshold:
+
+```php
+use Psr\Log\LogLevel;
+
+$logger = new JsonLogger();
+$logger->setMinLevel(LogLevel::WARNING);
+
+$logger->debug('This is skipped');
+$logger->info('This is also skipped');
+$logger->warning('This is logged');
+$logger->error('This is logged');
+```
+
 ### Custom channel
 
 Use the channel parameter to identify different services or application components:
@@ -109,6 +142,11 @@ Each log line is a single JSON object with the following fields:
 | `output`     | `string`   | `'php://stdout'`                                                              | File path or PHP stream wrapper    |
 | `channel`    | `string`   | `'app'`                                                                       | Application/service identifier     |
 | `redactKeys` | `string[]` | `['password', 'token', 'secret', 'api_key', 'authorization', 'credit_card']`  | Context keys to redact             |
+
+| Method | Returns | Description |
+|---|---|---|
+| `withContext(array $context)` | `self` | New logger instance with persistent context fields |
+| `setMinLevel(string $level)` | `void` | Set minimum log level threshold |
 
 All PSR-3 log methods are available: `emergency()`, `alert()`, `critical()`, `error()`, `warning()`, `notice()`, `info()`, `debug()`, `log()`.
 
