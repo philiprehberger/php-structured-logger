@@ -3,6 +3,7 @@
 [![Tests](https://github.com/philiprehberger/php-structured-logger/actions/workflows/tests.yml/badge.svg)](https://github.com/philiprehberger/php-structured-logger/actions/workflows/tests.yml)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/philiprehberger/php-structured-logger.svg)](https://packagist.org/packages/philiprehberger/php-structured-logger)
 [![License](https://img.shields.io/github/license/philiprehberger/php-structured-logger)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 PSR-3 compatible logger that outputs structured JSON log lines.
 
