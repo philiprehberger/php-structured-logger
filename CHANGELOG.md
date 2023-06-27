@@ -4,6 +4,13 @@ All notable changes to `php-structured-logger` will be documented in this file.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-03-27
+
+### Added
+- `withSampling()` for probabilistic log sampling with guaranteed error-level logging
+- `BufferedLogger` decorator for batched log output
+- `withCorrelationId()` for automatic correlation ID injection into all log entries
+
 ## [1.1.0] - 2026-03-22
 
 ### Added

@@ -20,10 +20,21 @@ final class JsonLogger extends AbstractLogger
         LogLevel::EMERGENCY => 7,
     ];
 
+    private const ALWAYS_LOG_LEVELS = [
+        LogLevel::ERROR,
+        LogLevel::CRITICAL,
+        LogLevel::ALERT,
+        LogLevel::EMERGENCY,
+    ];
+
     /** @var resource|null */
     private $handle = null;
 
     private string $minLevel = LogLevel::DEBUG;
+
+    private float $samplingRate = 1.0;
+
+    private ?string $correlationId = null;
 
     /**
      * @param  string  $output  File path or 'php://stdout' or 'php://stderr'
@@ -45,12 +56,17 @@ final class JsonLogger extends AbstractLogger
      */
     public function withContext(array $context): self
     {
-        return new self(
+        $new = new self(
             output: $this->output,
             channel: $this->channel,
             redactKeys: $this->redactKeys,
             persistentContext: array_merge($this->persistentContext, $context),
         );
+        $new->minLevel = $this->minLevel;
+        $new->samplingRate = $this->samplingRate;
+        $new->correlationId = $this->correlationId;
+
+        return $new;
     }
 
     /**
@@ -61,6 +77,28 @@ final class JsonLogger extends AbstractLogger
         $this->minLevel = $level;
     }
 
+    /**
+     * Enable probabilistic log sampling. Error-level and above are always logged.
+     *
+     * @param  float  $rate  Sampling rate between 0.0 and 1.0
+     */
+    public function withSampling(float $rate): self
+    {
+        $this->samplingRate = max(0.0, min(1.0, $rate));
+
+        return $this;
+    }
+
+    /**
+     * Set a correlation ID that is automatically included in every log entry's context.
+     */
+    public function withCorrelationId(string $id): self
+    {
+        $this->correlationId = $id;
+
+        return $this;
+    }
+
     public function log($level, string|\Stringable $message, array $context = []): void
     {
         $levelString = (string) $level;
@@ -69,7 +107,17 @@ final class JsonLogger extends AbstractLogger
             return;
         }
 
-        $mergedContext = array_merge($this->persistentContext, $context);
+        if (! $this->shouldSample($levelString)) {
+            return;
+        }
+
+        $mergedContext = $this->persistentContext;
+
+        if ($this->correlationId !== null) {
+            $mergedContext['correlation_id'] = $this->correlationId;
+        }
+
+        $mergedContext = array_merge($mergedContext, $context);
 
         $entry = new LogEntry(
             timestamp: new \DateTimeImmutable,
@@ -91,6 +139,26 @@ final class JsonLogger extends AbstractLogger
         $minPriority = self::LEVEL_PRIORITY[$this->minLevel] ?? 0;
 
         return $currentPriority < $minPriority;
+    }
+
+    /**
+     * Determine if a log entry should be written based on sampling rate.
+     */
+    private function shouldSample(string $level): bool
+    {
+        if (in_array($level, self::ALWAYS_LOG_LEVELS, true)) {
+            return true;
+        }
+
+        if ($this->samplingRate >= 1.0) {
+            return true;
+        }
+
+        if ($this->samplingRate <= 0.0) {
+            return false;
+        }
+
+        return mt_rand() / mt_getrandmax() < $this->samplingRate;
     }
 
     /**

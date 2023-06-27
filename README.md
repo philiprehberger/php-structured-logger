@@ -1,8 +1,12 @@
 # PHP Structured Logger
 
-[![Tests](https://github.com/philiprehberger/php-structured-logger/actions/workflows/tests.yml/badge.svg)](https://github.com/philiprehberger/php-structured-logger/actions/workflows/tests.yml)
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/philiprehberger/php-structured-logger.svg)](https://packagist.org/packages/philiprehberger/php-structured-logger)
+[![CI](https://github.com/philiprehberger/php-structured-logger/actions/workflows/tests.yml/badge.svg)](https://github.com/philiprehberger/php-structured-logger/actions/workflows/tests.yml)
+[![Packagist Version](https://img.shields.io/packagist/v/philiprehberger/php-structured-logger)](https://packagist.org/packages/philiprehberger/php-structured-logger)
+[![GitHub Release](https://img.shields.io/github/v/release/philiprehberger/php-structured-logger)](https://github.com/philiprehberger/php-structured-logger/releases)
+[![Last Updated](https://img.shields.io/github/last-commit/philiprehberger/php-structured-logger)](https://github.com/philiprehberger/php-structured-logger/commits/main)
 [![License](https://img.shields.io/github/license/philiprehberger/php-structured-logger)](LICENSE)
+[![Bug Reports](https://img.shields.io/github/issues/philiprehberger/php-structured-logger/bug)](https://github.com/philiprehberger/php-structured-logger/issues?q=label%3Abug)
+[![Feature Requests](https://img.shields.io/github/issues/philiprehberger/php-structured-logger/enhancement)](https://github.com/philiprehberger/php-structured-logger/issues?q=label%3Aenhancement)
 [![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 PSR-3 compatible logger that outputs structured JSON log lines.
@@ -122,6 +126,45 @@ $logger->info('Payment processed');
 // {"timestamp":"...","level":"info","message":"Payment processed","channel":"payments"}
 ```
 
+### Log sampling
+
+Use `withSampling()` to probabilistically sample log output. Messages at `error` level and above are always logged regardless of the sampling rate:
+
+```php
+$logger = new JsonLogger();
+$logger->withSampling(0.1); // Only 10% of debug/info/warning/notice messages are written
+
+$logger->info('Might be skipped');
+$logger->error('Always logged');
+```
+
+### Buffered logging
+
+Use `BufferedLogger` to batch log entries and flush them together:
+
+```php
+use PhilipRehberger\StructuredLogger\BufferedLogger;
+use PhilipRehberger\StructuredLogger\JsonLogger;
+
+$logger = new BufferedLogger(new JsonLogger(), bufferSize: 50);
+
+$logger->info('Buffered entry 1');
+$logger->info('Buffered entry 2');
+$logger->flush(); // Writes all buffered entries
+```
+
+### Correlation ID
+
+Use `withCorrelationId()` to automatically include a correlation ID in every log entry:
+
+```php
+$logger = new JsonLogger();
+$logger->withCorrelationId('req-abc-123');
+
+$logger->info('Processing request');
+// context includes "correlation_id": "req-abc-123"
+```
+
 ### Output Format
 
 Each log line is a single JSON object with the following fields:
@@ -148,8 +191,22 @@ Each log line is a single JSON object with the following fields:
 |---|---|---|
 | `withContext(array $context)` | `self` | New logger instance with persistent context fields |
 | `setMinLevel(string $level)` | `void` | Set minimum log level threshold |
+| `withSampling(float $rate)` | `self` | Enable probabilistic log sampling (0.0-1.0) |
+| `withCorrelationId(string $id)` | `self` | Set correlation ID for all log entries |
 
 All PSR-3 log methods are available: `emergency()`, `alert()`, `critical()`, `error()`, `warning()`, `notice()`, `info()`, `debug()`, `log()`.
+
+### `BufferedLogger`
+
+| Parameter    | Type         | Default | Description                          |
+|--------------|--------------|---------|--------------------------------------|
+| `logger`     | `JsonLogger` |         | Wrapped logger to flush entries to   |
+| `bufferSize` | `int`        | `100`   | Flush when buffer reaches this size  |
+
+| Method | Returns | Description |
+|---|---|---|
+| `flush()` | `void` | Write all buffered entries to the wrapped logger |
+| `count()` | `int` | Number of entries currently buffered |
 
 ### `LogEntry`
 
@@ -167,9 +224,15 @@ Immutable value object representing a single log entry. Implements `JsonSerializ
 composer install
 vendor/bin/phpunit
 vendor/bin/pint --test
-vendor/bin/phpstan analyse
 ```
+
+## Support
+
+If you find this package useful, consider giving it a star on GitHub — it helps motivate continued maintenance and development.
+
+[![LinkedIn](https://img.shields.io/badge/Philip%20Rehberger-LinkedIn-0A66C2?logo=linkedin)](https://www.linkedin.com/in/philiprehberger)
+[![More packages](https://img.shields.io/badge/more-open%20source%20packages-blue)](https://philiprehberger.com/open-source-packages)
 
 ## License
 
-MIT
+[MIT](LICENSE)

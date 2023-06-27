@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhilipRehberger\StructuredLogger\Tests;
 
+use PhilipRehberger\StructuredLogger\BufferedLogger;
 use PhilipRehberger\StructuredLogger\JsonLogger;
 use PhilipRehberger\StructuredLogger\LogEntry;
 use PHPUnit\Framework\TestCase;
@@ -304,5 +305,166 @@ final class JsonLoggerTest extends TestCase
 
         $this->assertCount(1, $entries);
         $this->assertSame('emergency', $entries[0]['level']);
+    }
+
+    // --- Sampling tests ---
+
+    public function test_sampling_rate_zero_skips_non_error_levels(): void
+    {
+        $logger = $this->createLogger();
+        $logger->withSampling(0.0);
+
+        $logger->debug('Skipped');
+        $logger->info('Skipped');
+        $logger->notice('Skipped');
+        $logger->warning('Skipped');
+        $logger->error('Always logged');
+        $logger->critical('Always logged');
+        $logger->alert('Always logged');
+        $logger->emergency('Always logged');
+        unset($logger);
+
+        $entries = $this->readAllLogEntries();
+
+        $this->assertCount(4, $entries);
+        $this->assertSame('error', $entries[0]['level']);
+        $this->assertSame('critical', $entries[1]['level']);
+        $this->assertSame('alert', $entries[2]['level']);
+        $this->assertSame('emergency', $entries[3]['level']);
+    }
+
+    public function test_sampling_rate_one_logs_all_messages(): void
+    {
+        $logger = $this->createLogger();
+        $logger->withSampling(1.0);
+
+        $logger->debug('Logged');
+        $logger->info('Logged');
+        $logger->notice('Logged');
+        $logger->warning('Logged');
+        $logger->error('Logged');
+        $logger->critical('Logged');
+        $logger->alert('Logged');
+        $logger->emergency('Logged');
+        unset($logger);
+
+        $entries = $this->readAllLogEntries();
+
+        $this->assertCount(8, $entries);
+    }
+
+    // --- BufferedLogger tests ---
+
+    public function test_buffered_logger_does_not_write_until_flush(): void
+    {
+        $logger = $this->createLogger();
+        $buffered = new BufferedLogger($logger, bufferSize: 100);
+
+        $buffered->info('Entry 1');
+        $buffered->info('Entry 2');
+        $buffered->info('Entry 3');
+        $buffered->info('Entry 4');
+        $buffered->info('Entry 5');
+
+        // Nothing should be written yet
+        $content = file_get_contents($this->logFile);
+        $this->assertEmpty(trim($content));
+
+        $this->assertSame(5, $buffered->count());
+
+        $buffered->flush();
+
+        $entries = $this->readAllLogEntries();
+        $this->assertCount(5, $entries);
+        $this->assertSame('Entry 1', $entries[0]['message']);
+        $this->assertSame('Entry 5', $entries[4]['message']);
+
+        $this->assertSame(0, $buffered->count());
+    }
+
+    public function test_buffered_logger_auto_flushes_at_buffer_size(): void
+    {
+        $logger = $this->createLogger();
+        $buffered = new BufferedLogger($logger, bufferSize: 3);
+
+        $buffered->info('Entry 1');
+        $buffered->info('Entry 2');
+
+        // Not yet flushed
+        $content = file_get_contents($this->logFile);
+        $this->assertEmpty(trim($content));
+
+        // This triggers auto-flush (buffer reaches size 3)
+        $buffered->info('Entry 3');
+
+        // Force logger to close handle so file is fully written
+        unset($buffered);
+
+        $entries = $this->readAllLogEntries();
+        $this->assertCount(3, $entries);
+    }
+
+    public function test_buffered_logger_auto_flushes_on_destruct(): void
+    {
+        $logger = $this->createLogger();
+        $buffered = new BufferedLogger($logger, bufferSize: 100);
+
+        $buffered->info('Entry 1');
+        $buffered->info('Entry 2');
+
+        // Trigger __destruct
+        unset($buffered);
+        unset($logger);
+
+        $entries = $this->readAllLogEntries();
+        $this->assertCount(2, $entries);
+    }
+
+    // --- Correlation ID tests ---
+
+    public function test_correlation_id_included_in_log_entry(): void
+    {
+        $logger = $this->createLogger();
+        $logger->withCorrelationId('corr-abc-123');
+
+        $logger->info('Test message');
+        unset($logger);
+
+        $entry = $this->readLastLogEntry();
+
+        $this->assertSame('corr-abc-123', $entry['context']['correlation_id']);
+    }
+
+    public function test_correlation_id_merges_with_persistent_context(): void
+    {
+        $logger = $this->createLogger();
+        $contextLogger = $logger->withContext(['service' => 'api']);
+        $contextLogger->withCorrelationId('corr-xyz');
+
+        $contextLogger->info('Test message');
+        unset($contextLogger);
+
+        $entry = $this->readLastLogEntry();
+
+        $this->assertSame('api', $entry['context']['service']);
+        $this->assertSame('corr-xyz', $entry['context']['correlation_id']);
+    }
+
+    public function test_correlation_id_present_in_every_entry(): void
+    {
+        $logger = $this->createLogger();
+        $logger->withCorrelationId('corr-multi');
+
+        $logger->info('First');
+        $logger->warning('Second');
+        $logger->error('Third');
+        unset($logger);
+
+        $entries = $this->readAllLogEntries();
+
+        $this->assertCount(3, $entries);
+        foreach ($entries as $entry) {
+            $this->assertSame('corr-multi', $entry['context']['correlation_id']);
+        }
     }
 }
