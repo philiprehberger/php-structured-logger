@@ -4,6 +4,12 @@ All notable changes to `php-structured-logger` will be documented in this file.
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-03-31
+
+### Changed
+- Standardize README to 3-badge format with emoji Support section
+- Update CI checkout action to v5 for Node.js 24 compatibility
+
 ## [1.2.0] - 2026-03-27
 
 ### Added
