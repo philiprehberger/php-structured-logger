@@ -119,6 +119,12 @@ final class JsonLogger extends AbstractLogger
 
         $mergedContext = array_merge($mergedContext, $context);
 
+        if (isset($mergedContext['exception']) && $mergedContext['exception'] instanceof \Throwable) {
+            $serialized = ExceptionSerializer::serialize($mergedContext['exception']);
+            $mergedContext = array_merge($mergedContext, $serialized);
+            unset($mergedContext['exception']);
+        }
+
         $entry = new LogEntry(
             timestamp: new \DateTimeImmutable,
             level: $levelString,
