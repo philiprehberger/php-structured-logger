@@ -1,8 +1,8 @@
-# php-structured-logger
+# PHP Structured Logger
 
 [![Tests](https://github.com/philiprehberger/php-structured-logger/actions/workflows/tests.yml/badge.svg)](https://github.com/philiprehberger/php-structured-logger/actions/workflows/tests.yml)
-[![Latest Version](https://img.shields.io/packagist/v/philiprehberger/php-structured-logger.svg)](https://packagist.org/packages/philiprehberger/php-structured-logger)
-[![License](https://img.shields.io/packagist/l/philiprehberger/php-structured-logger.svg)](LICENSE)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/philiprehberger/php-structured-logger.svg)](https://packagist.org/packages/philiprehberger/php-structured-logger)
+[![License](https://img.shields.io/github/license/philiprehberger/php-structured-logger)](LICENSE)
 
 PSR-3 compatible logger that outputs structured JSON log lines.
 
@@ -122,7 +122,7 @@ Immutable value object representing a single log entry. Implements `JsonSerializ
 | `toJson()`      | `string`         | Entry as JSON string           |
 | `jsonSerialize()`| `array`         | For `json_encode()` support    |
 
-## Testing
+## Development
 
 ```bash
 composer install
@@ -133,4 +133,4 @@ vendor/bin/phpstan analyse
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT
