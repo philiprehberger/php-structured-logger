@@ -31,25 +31,52 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
 
-      - name: Run Pint
-        run: vendor/bin/pint --test
-
-      - name: Run PHPStan
-        run: vendor/bin/phpstan analyse
-
       - name: Run tests
         run: vendor/bin/phpunit
+
+  lint:
+    name: Lint (Pint)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - run: vendor/bin/pint --test
+
+  static-analysis:
+    name: Static Analysis (PHPStan)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - run: vendor/bin/phpstan analyse --no-progress
 
   publish:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [tests]
+    needs: [tests, lint, static-analysis]
     name: Publish to Packagist
 
     steps:
       - name: Notify Packagist
         run: |
-          curl -XPOST \
-            -H 'content-type:application/json' \
-            "https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }}&apiToken=${{ secrets.PACKAGIST_TOKEN }}" \
-            -d '{"repository":{"url":"https://github.com/${{ github.repository }}"}}'
+          curl -XPOST             -H 'content-type:application/json'             "https://packagist.org/api/update-package?username=${{{{ secrets.PACKAGIST_USERNAME }}}}&apiToken=${{{{ secrets.PACKAGIST_TOKEN }}}}"             -d '{{"repository":{{"url":"https://github.com/${{{{ github.repository }}}}"}}}}'
