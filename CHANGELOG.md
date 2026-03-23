@@ -1,8 +1,14 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to `php-structured-logger` will be documented in this file.
 
 ## [Unreleased]
+
+## [1.1.0] - 2026-03-22
+
+### Added
+- `withContext()` method for attaching persistent context fields to all log entries
+- `setMinLevel()` method for filtering log entries below a severity threshold
 
 ## [1.0.2] - 2026-03-17
 

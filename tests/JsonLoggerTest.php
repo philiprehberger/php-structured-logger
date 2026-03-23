@@ -227,4 +227,82 @@ final class JsonLoggerTest extends TestCase
         $this->assertSame('Serializable test', $decoded['message']);
         $this->assertArrayNotHasKey('context', $decoded);
     }
+
+    public function test_with_context_includes_persistent_fields(): void
+    {
+        $logger = $this->createLogger();
+        $contextLogger = $logger->withContext(['request_id' => 'req-001', 'service' => 'api']);
+
+        $contextLogger->info('First message');
+        $contextLogger->warning('Second message', ['extra' => 'data']);
+        unset($contextLogger);
+
+        $entries = $this->readAllLogEntries();
+
+        $this->assertCount(2, $entries);
+        $this->assertSame('req-001', $entries[0]['context']['request_id']);
+        $this->assertSame('api', $entries[0]['context']['service']);
+        $this->assertSame('req-001', $entries[1]['context']['request_id']);
+        $this->assertSame('api', $entries[1]['context']['service']);
+        $this->assertSame('data', $entries[1]['context']['extra']);
+    }
+
+    public function test_with_context_returns_new_instance(): void
+    {
+        $logger = $this->createLogger();
+        $contextLogger = $logger->withContext(['request_id' => 'req-001']);
+
+        $this->assertNotSame($logger, $contextLogger);
+    }
+
+    public function test_set_min_level_filters_below_threshold(): void
+    {
+        $logger = $this->createLogger();
+        $logger->setMinLevel(LogLevel::WARNING);
+
+        $logger->debug('Should be skipped');
+        $logger->info('Should be skipped');
+        $logger->notice('Should be skipped');
+        $logger->warning('Should appear');
+        $logger->error('Should appear');
+        unset($logger);
+
+        $entries = $this->readAllLogEntries();
+
+        $this->assertCount(2, $entries);
+        $this->assertSame('warning', $entries[0]['level']);
+        $this->assertSame('error', $entries[1]['level']);
+    }
+
+    public function test_set_min_level_allows_all_at_debug(): void
+    {
+        $logger = $this->createLogger();
+        $logger->setMinLevel(LogLevel::DEBUG);
+
+        $logger->debug('Debug message');
+        $logger->info('Info message');
+        $logger->emergency('Emergency message');
+        unset($logger);
+
+        $entries = $this->readAllLogEntries();
+
+        $this->assertCount(3, $entries);
+    }
+
+    public function test_set_min_level_at_emergency_filters_all_but_emergency(): void
+    {
+        $logger = $this->createLogger();
+        $logger->setMinLevel(LogLevel::EMERGENCY);
+
+        $logger->alert('Should be skipped');
+        $logger->critical('Should be skipped');
+        $logger->error('Should be skipped');
+        $logger->emergency('Should appear');
+        unset($logger);
+
+        $entries = $this->readAllLogEntries();
+
+        $this->assertCount(1, $entries);
+        $this->assertSame('emergency', $entries[0]['level']);
+    }
 }
