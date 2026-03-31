@@ -1,13 +1,8 @@
 # PHP Structured Logger
 
-[![CI](https://github.com/philiprehberger/php-structured-logger/actions/workflows/tests.yml/badge.svg)](https://github.com/philiprehberger/php-structured-logger/actions/workflows/tests.yml)
-[![Packagist Version](https://img.shields.io/packagist/v/philiprehberger/php-structured-logger)](https://packagist.org/packages/philiprehberger/php-structured-logger)
-[![GitHub Release](https://img.shields.io/github/v/release/philiprehberger/php-structured-logger)](https://github.com/philiprehberger/php-structured-logger/releases)
-[![Last Updated](https://img.shields.io/github/last-commit/philiprehberger/php-structured-logger)](https://github.com/philiprehberger/php-structured-logger/commits/main)
-[![License](https://img.shields.io/github/license/philiprehberger/php-structured-logger)](LICENSE)
-[![Bug Reports](https://img.shields.io/github/issues/philiprehberger/php-structured-logger/bug)](https://github.com/philiprehberger/php-structured-logger/issues?q=label%3Abug)
-[![Feature Requests](https://img.shields.io/github/issues/philiprehberger/php-structured-logger/enhancement)](https://github.com/philiprehberger/php-structured-logger/issues?q=label%3Aenhancement)
-[![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
+[![Tests](https://github.com/philiprehberger/php-structured-logger/actions/workflows/tests.yml/badge.svg)](https://github.com/philiprehberger/php-structured-logger/actions/workflows/tests.yml)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/philiprehberger/php-structured-logger.svg)](https://packagist.org/packages/philiprehberger/php-structured-logger)
+[![Last updated](https://img.shields.io/github/last-commit/philiprehberger/php-structured-logger)](https://github.com/philiprehberger/php-structured-logger/commits/main)
 
 PSR-3 compatible logger that outputs structured JSON log lines.
 
@@ -228,10 +223,21 @@ vendor/bin/pint --test
 
 ## Support
 
-If you find this package useful, consider giving it a star on GitHub — it helps motivate continued maintenance and development.
+If you find this project useful:
 
-[![LinkedIn](https://img.shields.io/badge/Philip%20Rehberger-LinkedIn-0A66C2?logo=linkedin)](https://www.linkedin.com/in/philiprehberger)
-[![More packages](https://img.shields.io/badge/more-open%20source%20packages-blue)](https://philiprehberger.com/open-source-packages)
+⭐ [Star the repo](https://github.com/philiprehberger/php-structured-logger)
+
+🐛 [Report issues](https://github.com/philiprehberger/php-structured-logger/issues?q=is%3Aissue+is%3Aopen+label%3Abug)
+
+💡 [Suggest features](https://github.com/philiprehberger/php-structured-logger/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement)
+
+❤️ [Sponsor development](https://github.com/sponsors/philiprehberger)
+
+🌐 [All Open Source Projects](https://philiprehberger.com/open-source-packages)
+
+💻 [GitHub Profile](https://github.com/philiprehberger)
+
+🔗 [LinkedIn Profile](https://www.linkedin.com/in/philiprehberger)
 
 ## License
 
