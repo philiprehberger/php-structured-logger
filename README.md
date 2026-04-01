@@ -160,6 +160,62 @@ $logger->info('Processing request');
 // context includes "correlation_id": "req-abc-123"
 ```
 
+### Multiple output targets
+
+Use `MultiLogger` to fan out log calls to multiple logger instances:
+
+```php
+use PhilipRehberger\StructuredLogger\MultiLogger;
+use PhilipRehberger\StructuredLogger\JsonLogger;
+use PhilipRehberger\StructuredLogger\EcsLogger;
+
+$jsonLogger = new JsonLogger(output: '/var/log/app.log');
+$ecsLogger = new EcsLogger(output: '/var/log/app-ecs.log');
+
+$multi = new MultiLogger([$jsonLogger, $ecsLogger]);
+$multi->info('Logged to both targets', ['user_id' => 42]);
+```
+
+Each logger in the array respects its own minimum level and configuration independently.
+
+### ECS (Elastic Common Schema) format
+
+Use `EcsLogger` to output logs in [Elastic Common Schema](https://www.elastic.co/guide/en/ecs/current/index.html) format:
+
+```php
+use PhilipRehberger\StructuredLogger\EcsLogger;
+
+$logger = new EcsLogger(output: '/var/log/app-ecs.log', channel: 'api');
+$logger->info('Request processed', ['http.method' => 'GET', 'url.path' => '/users']);
+```
+
+Output:
+
+```json
+{"@timestamp":"2026-04-01T10:00:00+00:00","log.level":"info","message":"Request processed","ecs.version":"8.11","service.name":"api","http.method":"GET","url.path":"/users"}
+```
+
+### Structured exception formatting
+
+When an `exception` key containing a `Throwable` is passed in context, both `JsonLogger` and `EcsLogger` automatically serialize it into structured fields:
+
+```php
+try {
+    riskyOperation();
+} catch (\Throwable $e) {
+    $logger->error('Operation failed', ['exception' => $e]);
+}
+```
+
+The exception is serialized into `error.type`, `error.message`, `error.code`, and `error.stack_trace` fields. You can also use `ExceptionSerializer` directly:
+
+```php
+use PhilipRehberger\StructuredLogger\ExceptionSerializer;
+
+$data = ExceptionSerializer::serialize($exception, traceDepth: 5);
+// ['error.type' => 'RuntimeException', 'error.message' => '...', 'error.code' => 0, 'error.stack_trace' => [...]]
+```
+
 ### Output Format
 
 Each log line is a single JSON object with the following fields:
@@ -202,6 +258,35 @@ All PSR-3 log methods are available: `emergency()`, `alert()`, `critical()`, `er
 |---|---|---|
 | `flush()` | `void` | Write all buffered entries to the wrapped logger |
 | `count()` | `int` | Number of entries currently buffered |
+
+### `MultiLogger`
+
+| Parameter | Type               | Default | Description                          |
+|-----------|--------------------|---------|--------------------------------------|
+| `loggers` | `LoggerInterface[]` | `[]`    | Logger instances to fan out calls to |
+
+All PSR-3 log methods are available. Each call is forwarded to every logger in the array.
+
+### `EcsLogger`
+
+| Parameter | Type     | Default          | Description                     |
+|-----------|----------|------------------|---------------------------------|
+| `output`  | `string` | `'php://stdout'` | File path or PHP stream wrapper |
+| `channel` | `string` | `'app'`          | Service name (`service.name`)   |
+
+| Method | Returns | Description |
+|---|---|---|
+| `setMinLevel(string $level)` | `void` | Set minimum log level threshold |
+
+All PSR-3 log methods are available. Output follows the Elastic Common Schema (ECS 8.11) format.
+
+### `ExceptionSerializer`
+
+| Method | Returns | Description |
+|---|---|---|
+| `serialize(Throwable $exception, int $traceDepth = 10)` | `array` | Serialize exception into structured fields |
+
+Returns an array with keys: `error.type`, `error.message`, `error.code`, `error.stack_trace`.
 
 ### `LogEntry`
 

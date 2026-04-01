@@ -4,6 +4,13 @@ All notable changes to `php-structured-logger` will be documented in this file.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-04-01
+
+### Added
+- Multiple output targets via `MultiLogger`
+- ECS (Elastic Common Schema) format via `EcsLogger`
+- Structured exception formatting via `ExceptionSerializer`
+
 ## [1.2.1] - 2026-03-31
 
 ### Changed
